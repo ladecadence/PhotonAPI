@@ -22,7 +22,35 @@ func (s *SQLite) Open(fileName string) (*gorm.DB, error) {
 }
 
 func (s *SQLite) Init() error {
+	err := s.db.AutoMigrate(&models.User{})
+	if err != nil {
+		return err
+	}
 	return s.db.AutoMigrate(&models.Wall{})
+}
+
+func (s *SQLite) UpsertUser(u models.User) error {
+	result := s.db.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&u)
+	return result.Error
+}
+
+func (s *SQLite) DeleteUser(models.User) error {
+	// TODO
+	return nil
+}
+
+func (s *SQLite) GetUsers() ([]models.User, error) {
+	var users []models.User
+	result := s.db.Find(&users)
+	return users, result.Error
+}
+
+func (s *SQLite) GetUser(name string) (models.User, error) {
+	var user models.User
+	result := s.db.Where("name=?", name).First(&user)
+	return user, result.Error
 }
 
 func (s *SQLite) UpsertWall(w models.Wall) error {
@@ -33,6 +61,7 @@ func (s *SQLite) UpsertWall(w models.Wall) error {
 }
 
 func (s *SQLite) DeleteWall(w models.Wall) error {
+	// TODO
 	return nil
 }
 
