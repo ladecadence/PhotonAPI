@@ -11,4 +11,5 @@ import (
 func RegisterRoutes(db database.Database, config config.Config, router *http.ServeMux) {
 	router.HandleFunc("/api", controllers.ConfMiddleWare(db, config, controllers.ApiRoot))
 	router.HandleFunc("/api/walls", controllers.ConfMiddleWare(db, config, controllers.ApiGetWalls))
+	router.HandleFunc("/api/wall/{uid}", controllers.ConfMiddleWare(db, config, controllers.ApiGetWall))
 }

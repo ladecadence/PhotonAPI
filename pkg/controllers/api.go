@@ -44,3 +44,27 @@ func ApiGetWalls(writer http.ResponseWriter, request *http.Request) {
 	writer.Write(res)
 	writer.Write([]byte("\n"))
 }
+
+func ApiGetWall(writer http.ResponseWriter, request *http.Request) {
+
+	// get ID
+	uid := request.PathValue("uid")
+	if uid == "" {
+		writer.WriteHeader(http.StatusNoContent)
+		writer.Write([]byte(`{}`))
+		return
+	}
+	wall, err := db.GetWall(uid)
+
+	if err != nil {
+		writer.WriteHeader(http.StatusNoContent)
+		writer.Write([]byte(`{}`))
+		return
+	}
+
+	res, _ := json.Marshal(wall)
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	writer.Write(res)
+	writer.Write([]byte("\n"))
+}
