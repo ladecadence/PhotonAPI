@@ -25,6 +25,28 @@ func ConfMiddleWare(dtb database.Database, c config.Config, h http.HandlerFunc) 
 	})
 }
 
+func CheckAuth(r *http.Request) bool {
+	username, password, ok := r.BasicAuth()
+	if ok {
+		// get username from DB
+		user, err := db.GetUser(username)
+		if err != nil {
+			return false
+		}
+		// ok, we have a username, check password
+		passwordHash := fmt.Sprintf("%x", sha256.Sum256([]byte(password)))
+		passwordMatch := (subtle.ConstantTimeCompare([]byte(passwordHash), []byte(user.Password)) == 1)
+		if passwordMatch {
+			return true
+		} else {
+			return false
+		}
+
+	} else {
+		return false
+	}
+}
+
 // "/api" return configuration parameters
 func ApiRoot(writer http.ResponseWriter, request *http.Request) {
 	res, _ := json.Marshal(conf)
@@ -77,36 +99,25 @@ func ApiGetWall(writer http.ResponseWriter, request *http.Request) {
 
 func ApiNewWall(writer http.ResponseWriter, request *http.Request) {
 	// check auth
-	username, password, ok := request.BasicAuth()
-	if ok {
-		// get username from DB
-		user, err := db.GetUser(username)
+	authOk := CheckAuth(request)
+	if authOk {
+		writer.WriteHeader(http.StatusOK)
+		reqBody, _ := io.ReadAll(request.Body)
+		request.Body.Close()
+		// try to create new wall
+		wall := models.Wall{}
+		err := json.Unmarshal(reqBody, &wall)
 		if err != nil {
-			// no such user
-			writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-			http.Error(writer, "Unauthorized", http.StatusUnauthorized)
+			log.Printf("❌ Error decoding body: %v", err.Error())
+		}
+		err = db.UpsertWall(wall)
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			writer.Write([]byte("{}"))
 			return
 		}
-		// ok, we have a username, check password
-		passwordHash := fmt.Sprintf("%x", sha256.Sum256([]byte(password)))
-		passwordMatch := (subtle.ConstantTimeCompare([]byte(passwordHash), []byte(user.Password)) == 1)
-		if passwordMatch {
-			writer.WriteHeader(http.StatusOK)
-			reqBody, _ := io.ReadAll(request.Body)
-			request.Body.Close()
-			// try to create new wall
-			wall := &models.Wall{}
-			err := json.Unmarshal(reqBody, wall)
-			if err != nil {
-				log.Printf("❌ Error decoding body: %v", err.Error())
-			}
-			data, err := json.Marshal(wall)
-			writer.Write(data)
-		} else {
-			writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-			http.Error(writer, "Unauthorized", http.StatusUnauthorized)
-		}
-
+		data, err := json.Marshal(wall)
+		writer.Write(data)
 	} else {
 		writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
