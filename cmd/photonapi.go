@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	_ "embed"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -61,6 +62,10 @@ func initData(db database.Database) {
 }
 
 func main() {
+	// flags
+	testDataFlag := flag.Bool("testdata", false, "load test data into database")
+	flag.Parse()
+
 	// read configuration
 	config := config.Config{ConfFile: "config.toml"}
 	config.GetConfig()
@@ -75,7 +80,11 @@ func main() {
 	if err != nil {
 		panic("Error initializing DB: " + err.Error())
 	}
-	//initData(database)
+
+	// load testa data in database if -testdata arg
+	if *testDataFlag {
+		initData(database)
+	}
 
 	// walls, err := database.GetWalls()
 	// for _, w := range walls {
