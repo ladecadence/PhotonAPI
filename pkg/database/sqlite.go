@@ -26,6 +26,10 @@ func (s *SQLite) Init() error {
 	if err != nil {
 		return err
 	}
+	err = s.db.AutoMigrate(&models.Problem{})
+	if err != nil {
+		return err
+	}
 	return s.db.AutoMigrate(&models.Wall{})
 }
 
@@ -75,4 +79,34 @@ func (s *SQLite) GetWall(uid string) (models.Wall, error) {
 	var wall models.Wall
 	result := s.db.Where("uid=?", uid).First(&wall)
 	return wall, result.Error
+}
+
+func (s *SQLite) UpsertProblem(p models.Problem) error {
+	result := s.db.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&p)
+	return result.Error
+}
+
+func (s *SQLite) DeleteProblem(w models.Problem) error {
+	// TODO
+	return nil
+}
+
+func (s *SQLite) GetProblems() ([]models.Problem, error) {
+	var problems []models.Problem
+	result := s.db.Find(&problems)
+	return problems, result.Error
+}
+
+func (s *SQLite) GetProblem(uid string) (models.Problem, error) {
+	var problem models.Problem
+	result := s.db.Where("uid=?", uid).First(&problem)
+	return problem, result.Error
+}
+
+func (s *SQLite) GetWallProblems(wallid string) (models.Problem, error) {
+	var problem models.Problem
+	result := s.db.Where("wallid=?", wallid).First(&problem)
+	return problem, result.Error
 }
