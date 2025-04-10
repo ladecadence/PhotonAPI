@@ -4,6 +4,10 @@ import (
 	"gorm.io/gorm"
 )
 
+func ProblemFields() []string {
+	return []string{"uid", "wallid", "name", "description", "grade", "rating", "sends", "holds"}
+}
+
 type Problem struct {
 	gorm.Model
 	ID          uint   `gorm:"primaryKey"`

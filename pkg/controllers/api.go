@@ -8,6 +8,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"slices"
+	"strings"
 
 	"github.com/ladecadence/PhotonAPI/pkg/config"
 	"github.com/ladecadence/PhotonAPI/pkg/database"
@@ -58,7 +60,20 @@ func ApiRoot(writer http.ResponseWriter, request *http.Request) {
 
 func ApiGetWalls(writer http.ResponseWriter, request *http.Request) {
 
-	walls, err := db.GetWalls()
+	// check query
+	queryFields := strings.Split(request.URL.Query().Get("fields"), ",")
+	fields := []string{}
+
+	if len(queryFields) > 0 {
+		// check wich fields are real DB fields
+		for _, f := range queryFields {
+			if slices.Contains(models.WallFields(), f) {
+				fields = append(fields, f)
+			}
+		}
+	}
+
+	walls, err := db.GetWalls(fields)
 
 	if err != nil || walls == nil {
 		writer.WriteHeader(http.StatusNoContent)

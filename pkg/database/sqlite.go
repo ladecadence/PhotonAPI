@@ -69,9 +69,14 @@ func (s *SQLite) DeleteWall(w models.Wall) error {
 	return nil
 }
 
-func (s *SQLite) GetWalls() ([]models.Wall, error) {
+func (s *SQLite) GetWalls(fields []string) ([]models.Wall, error) {
 	var walls []models.Wall
-	result := s.db.Find(&walls)
+	var result *gorm.DB
+	if fields != nil && len(fields) > 0 {
+		result = s.db.Select(fields).Find(&walls)
+	} else {
+		result = s.db.Find(&walls)
+	}
 	return walls, result.Error
 }
 

@@ -14,7 +14,7 @@ type Database interface {
 	GetUser(string) (models.User, error)
 	UpsertWall(models.Wall) error
 	DeleteWall(models.Wall) error
-	GetWalls() ([]models.Wall, error)
+	GetWalls([]string) ([]models.Wall, error)
 	GetWall(string) (models.Wall, error)
 	UpsertProblem(models.Problem) error
 	DeleteProblem(models.Problem) error

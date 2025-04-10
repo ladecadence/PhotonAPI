@@ -4,6 +4,10 @@ import (
 	"gorm.io/gorm"
 )
 
+func WallFields() []string {
+	return []string{"uid", "name", "description", "adjustable", "deg_min", "deg_max", "image", "img_w", "img_h", "holds"}
+}
+
 type Wall struct {
 	gorm.Model
 	ID          uint    `gorm:"primaryKey"`
