@@ -64,10 +64,11 @@ func initData(db database.Database) {
 func main() {
 	// flags
 	testDataFlag := flag.Bool("testdata", false, "load test data into database")
+	configFileFlag := flag.String("conf", "config.toml", "config file path")
 	flag.Parse()
 
 	// read configuration
-	config := config.Config{ConfFile: "config.toml"}
+	config := config.Config{ConfFile: *configFileFlag}
 	config.GetConfig()
 
 	// open and init database
