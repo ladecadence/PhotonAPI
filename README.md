@@ -16,7 +16,7 @@ You can pass the -testdata argument if you want the testdata to be created on th
 All data sent and received is using JSON format. Binary data line wall images are base64 encoded. All uids are UUIDs V4.
 
 - /api (GET) : Get api info data, version, etc.
-- /api/walls (GET) : Get all walls.
+- /api/walls (GET) : Get all walls. You can pass the parameter "fields" to get just the fields you need (api/walls?fields=uid,name for example).
 - /api/wall/{uid} (GET) : Get wall by uid.
 - /api/newwall (POST) : Upload a new wall. Uses HTTP Basic Auth.
 - /api/problems (GET) : Get all problems.
