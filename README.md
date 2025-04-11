@@ -19,6 +19,6 @@ All data sent and received is using JSON format. Binary data line wall images ar
 - /api/walls (GET) : Get all walls. You can pass the parameter "fields" to get just the fields you need (api/walls?fields=uid,name for example).
 - /api/wall/{uid} (GET) : Get wall by uid.
 - /api/newwall (POST) : Upload a new wall. Uses HTTP Basic Auth.
-- /api/problems (GET) : Get all problems.
+- /api/problems (GET) : Get all problems. You can pass the parameters "page" and "page_size" to get chunks of results.
 - /api/problem/{uid} (GET) : Get problem by uid.
 - /api/newproblem (POST) : Upload a new problem. Uses HTTP Basic Auth.

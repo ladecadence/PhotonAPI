@@ -18,7 +18,7 @@ type Database interface {
 	GetWall(string) (models.Wall, error)
 	UpsertProblem(models.Problem) error
 	DeleteProblem(models.Problem) error
-	GetProblems() ([]models.Problem, error)
+	GetProblems(page int, page_size int) ([]models.Problem, error)
 	GetProblem(string) (models.Problem, error)
 	GetWallProblems(string) (models.Problem, error)
 }

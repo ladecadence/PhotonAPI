@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/ladecadence/PhotonAPI/pkg/config"
@@ -144,8 +145,11 @@ func ApiNewWall(writer http.ResponseWriter, request *http.Request) {
 }
 
 func ApiGetProblems(writer http.ResponseWriter, request *http.Request) {
+	// check query
+	page, _ := strconv.Atoi(request.URL.Query().Get("page"))
+	page_size, _ := strconv.Atoi(request.URL.Query().Get("page_size"))
 
-	problems, err := db.GetProblems()
+	problems, err := db.GetProblems(page, page_size)
 
 	if err != nil || problems == nil {
 		writer.WriteHeader(http.StatusNoContent)
