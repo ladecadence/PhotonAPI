@@ -149,7 +149,7 @@ func ApiGetProblems(writer http.ResponseWriter, request *http.Request) {
 	page, _ := strconv.Atoi(request.URL.Query().Get("page"))
 	page_size, _ := strconv.Atoi(request.URL.Query().Get("page_size"))
 
-	problems, err := db.GetProblems(page, page_size)
+	problems, err := db.GetProblems(page, page_size, models.ProblemFilter{Active: false})
 
 	if err != nil || problems == nil {
 		writer.WriteHeader(http.StatusNoContent)

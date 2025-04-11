@@ -98,13 +98,24 @@ func (s *SQLite) DeleteProblem(w models.Problem) error {
 	return nil
 }
 
-func (s *SQLite) GetProblems(page int, page_size int) ([]models.Problem, error) {
+func (s *SQLite) GetProblems(page int, page_size int, filter models.ProblemFilter) ([]models.Problem, error) {
 	var result *gorm.DB
+
 	var problems []models.Problem
+	// var tx *gorm.DB
+
+	// if filter.Active {
+	// 	if filter.OrderBy != models.FilterOrderByNothing {
+
+	// 	}
+	// } else {
+	// 	tx = s.db.Order("asc")
+	// }
+
 	if page >= 0 && page_size > 0 {
-		result = s.db.Limit(page_size).Offset(page * page_size).Find(&problems)
+		result = s.db.Order("asc").Limit(page_size).Offset(page * page_size).Find(&problems)
 	} else {
-		result = s.db.Find(&problems)
+		result = s.db.Order("asc").Find(&problems)
 	}
 	return problems, result.Error
 }
