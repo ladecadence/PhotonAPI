@@ -44,7 +44,7 @@ func ApiSignup(writer http.ResponseWriter, request *http.Request) {
 	password := request.FormValue("password")
 	email := request.FormValue("email")
 
-	if len(username) > 3 && len(password) > 8 && len(email) > 6 {
+	if len(username) >= 3 && len(password) >= 8 && len(email) >= 6 {
 		// user exists ?
 		check, err := db.GetUser(username)
 		if err != nil {
