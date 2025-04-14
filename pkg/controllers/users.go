@@ -71,7 +71,7 @@ func ApiSignup(writer http.ResponseWriter, request *http.Request) {
 			writer.Write([]byte("{}\n"))
 			return
 		}
-
+		writer.Write([]byte("{}\n"))
 	} else {
 		writer.WriteHeader(http.StatusBadRequest)
 		writer.Write([]byte("{\"error\": \"bad fields\"}\n"))
