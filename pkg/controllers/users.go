@@ -117,6 +117,7 @@ func ApiLogin(writer http.ResponseWriter, request *http.Request) {
 			writer.Write([]byte("{}\n"))
 			return
 		}
+		writer.Write([]byte("{}\n"))
 
 	} else {
 		writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
@@ -155,4 +156,5 @@ func ApiLogout(writer http.ResponseWriter, request *http.Request) {
 	user.CSRF = ""
 	user.Token = ""
 	db.UpsertUser(user)
+	writer.Write([]byte("{}\n"))
 }
