@@ -129,6 +129,7 @@ func ApiLogout(writer http.ResponseWriter, request *http.Request) {
 	if err := Authorize(request); err != nil {
 		writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
+		return
 	}
 
 	// clear cookies
