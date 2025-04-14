@@ -1,16 +1,15 @@
 package controllers
 
 import (
+	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/ladecadence/PhotonAPI/pkg/config"
 	"github.com/ladecadence/PhotonAPI/pkg/database"
@@ -50,6 +49,14 @@ func CheckAuth(r *http.Request) bool {
 	}
 }
 
+func GenerateToken(lenght int) string {
+	bytes := make([]byte, lenght)
+	if _, err := rand.Read(bytes); err != nil {
+		log.Fatal("Failed to generate Token %v", err)
+	}
+	return base64.URLEncoding.EncodeToString(bytes)
+}
+
 // "/api" return configuration parameters
 func ApiRoot(writer http.ResponseWriter, request *http.Request) {
 	res, _ := json.Marshal(conf)
@@ -57,91 +64,6 @@ func ApiRoot(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(http.StatusOK)
 	writer.Write(res)
 	writer.Write([]byte("\n"))
-}
-
-func ApiGetWalls(writer http.ResponseWriter, request *http.Request) {
-
-	// check query
-	queryFields := strings.Split(request.URL.Query().Get("fields"), ",")
-	fields := []string{}
-
-	if len(queryFields) > 0 {
-		// check wich fields are real DB fields
-		for _, f := range queryFields {
-			if slices.Contains(models.WallFields(), f) {
-				fields = append(fields, f)
-			}
-		}
-	}
-
-	walls, err := db.GetWalls(fields)
-
-	if err != nil || walls == nil {
-		writer.WriteHeader(http.StatusNoContent)
-		writer.Write([]byte(`{}\n`))
-		return
-	}
-
-	res, _ := json.Marshal(walls)
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	writer.Write(res)
-	writer.Write([]byte("\n"))
-}
-
-func ApiGetWall(writer http.ResponseWriter, request *http.Request) {
-
-	// get ID
-	uid := request.PathValue("uid")
-	if uid == "" {
-		writer.WriteHeader(http.StatusNoContent)
-		writer.Write([]byte(`{}\n`))
-		return
-	}
-	wall, err := db.GetWall(uid)
-
-	if err != nil {
-		writer.WriteHeader(http.StatusNoContent)
-		writer.Write([]byte(`{}\n`))
-		return
-	}
-
-	res, _ := json.Marshal(wall)
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	writer.Write(res)
-	writer.Write([]byte("\n"))
-}
-
-func ApiNewWall(writer http.ResponseWriter, request *http.Request) {
-	// check auth
-	authOk := CheckAuth(request)
-	if authOk {
-		reqBody, _ := io.ReadAll(request.Body)
-		request.Body.Close()
-		// try to create new wall
-		wall := models.Wall{}
-		err := json.Unmarshal(reqBody, &wall)
-		if err != nil {
-			log.Printf("❌ Error decoding body: %v", err.Error())
-			writer.WriteHeader(http.StatusBadRequest)
-			writer.Write([]byte("{}\n"))
-			return
-		}
-		err = db.UpsertWall(wall)
-		if err != nil {
-			writer.WriteHeader(http.StatusBadRequest)
-			writer.Write([]byte("{}\n"))
-			return
-		}
-		data, err := json.Marshal(wall)
-		writer.WriteHeader(http.StatusOK)
-		writer.Write(data)
-		writer.Write([]byte("\n"))
-	} else {
-		writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
-	}
 }
 
 func ApiGetProblems(writer http.ResponseWriter, request *http.Request) {
@@ -158,82 +80,6 @@ func ApiGetProblems(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	res, _ := json.Marshal(problems)
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	writer.Write(res)
-	writer.Write([]byte("\n"))
-}
-
-func ApiGetProblem(writer http.ResponseWriter, request *http.Request) {
-	// get ID
-	uid := request.PathValue("uid")
-	if uid == "" {
-		writer.WriteHeader(http.StatusNoContent)
-		writer.Write([]byte(`{}\n`))
-		return
-	}
-	problem, err := db.GetProblem(uid)
-
-	if err != nil {
-		writer.WriteHeader(http.StatusNoContent)
-		writer.Write([]byte(`{}\n`))
-		return
-	}
-
-	res, _ := json.Marshal(problem)
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	writer.Write(res)
-	writer.Write([]byte("\n"))
-}
-
-func ApiNewProblem(writer http.ResponseWriter, request *http.Request) {
-	// check auth
-	authOk := CheckAuth(request)
-	if authOk {
-		reqBody, _ := io.ReadAll(request.Body)
-		request.Body.Close()
-		// try to create new wall
-		problem := models.Problem{}
-		err := json.Unmarshal(reqBody, &problem)
-		if err != nil {
-			writer.WriteHeader(http.StatusBadRequest)
-			log.Printf("❌ Error decoding body: %v", err.Error())
-			writer.Write([]byte("{}\n"))
-			return
-		}
-		err = db.UpsertProblem(problem)
-		if err != nil {
-			writer.WriteHeader(http.StatusBadRequest)
-			writer.Write([]byte("{}\n"))
-			return
-		}
-		data, err := json.Marshal(problem)
-		writer.WriteHeader(http.StatusOK)
-		writer.Write(data)
-	} else {
-		writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
-	}
-}
-
-func ApiGetWallProblems(writer http.ResponseWriter, request *http.Request) {
-	// get ID
-	wallid := request.PathValue("wallid")
-	if wallid == "" {
-		writer.WriteHeader(http.StatusNoContent)
-		writer.Write([]byte(`{}\n`))
-		return
-	}
-	problem, err := db.GetWallProblems(wallid)
-
-	if err != nil {
-		writer.WriteHeader(http.StatusNoContent)
-		writer.Write([]byte(`{}\n`))
-		return
-	}
-
-	res, _ := json.Marshal(problem)
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
 	writer.Write(res)
