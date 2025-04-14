@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ladecadence/PhotonAPI/pkg/models"
+	"gorm.io/gorm"
 )
 
 var ErrAuth = errors.New("Unauthorized")
@@ -47,7 +48,7 @@ func ApiSignup(writer http.ResponseWriter, request *http.Request) {
 	if len(username) >= 3 && len(password) >= 8 && len(email) >= 6 {
 		// user exists ?
 		check, err := db.GetUser(username)
-		if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			writer.WriteHeader(http.StatusInternalServerError)
 			writer.Write([]byte("{}\n"))
 			return
