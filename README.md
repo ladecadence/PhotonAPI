@@ -22,6 +22,6 @@ All data sent and received is using JSON format. Binary data line wall images ar
 - /api/problems (GET) : Get all problems. You can pass the parameters "page" and "page_size" to get chunks of results.
 - /api/problem/{uid} (GET) : Get problem by uid.
 - /api/newproblem (POST) : Upload a new problem. Uses HTTP Basic Auth.
-- /api/signup (POST) : Signs up a new user. User is passed as form values in the POST body with "username", "password" and "email".
+- /api/signup (POST) : Signs up a new user. User is passed as form values in the POST body with "username", "password" and "email". Password is SHA256 encoded as hex string (like sha256sum command).
 - /api/login (GET): Login to obtain session tokens. Auth info is passed using HTTP Basic Auth. Gets two cookies with session token and CSRF token.
 - /api/logout (GET): Logout invalidates session tokens. You must pass the user in the header as X-User and the CSRF Token as X-CSRF-Token.
