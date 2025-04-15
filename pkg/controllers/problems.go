@@ -5,9 +5,30 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/ladecadence/PhotonAPI/pkg/models"
 )
+
+func ApiGetProblems(writer http.ResponseWriter, request *http.Request) {
+	// check query
+	page, _ := strconv.Atoi(request.URL.Query().Get("page"))
+	page_size, _ := strconv.Atoi(request.URL.Query().Get("page_size"))
+
+	problems, err := db.GetProblems(page, page_size, models.ProblemFilter{Active: false})
+
+	if err != nil || problems == nil {
+		writer.WriteHeader(http.StatusNoContent)
+		writer.Write([]byte(`{}\n`))
+		return
+	}
+
+	res, _ := json.Marshal(problems)
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	writer.Write(res)
+	writer.Write([]byte("\n"))
+}
 
 func ApiGetProblem(writer http.ResponseWriter, request *http.Request) {
 	// get ID
