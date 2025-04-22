@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -15,7 +16,37 @@ func ApiGetProblems(writer http.ResponseWriter, request *http.Request) {
 	page, _ := strconv.Atoi(request.URL.Query().Get("page"))
 	page_size, _ := strconv.Atoi(request.URL.Query().Get("page_size"))
 
-	problems, err := db.GetProblems(page, page_size, models.ProblemFilter{Active: false})
+	// filter
+	filter := models.ProblemFilter{Active: false}
+
+	wallid := request.URL.Query().Get("wallid")
+	grade_max := request.URL.Query().Get("grade_max")
+	grade_min := request.URL.Query().Get("grade_min")
+	order_by := request.URL.Query().Get("order_by")
+	order_dir := request.URL.Query().Get("order_dir")
+
+	if wallid != "" {
+		filter.SetWallID(wallid)
+		fmt.Println("Wallid: ", wallid)
+	}
+	if grade_max != "" || grade_min != "" {
+		min, _ := strconv.Atoi(grade_min)
+		max, _ := strconv.Atoi(grade_max)
+		filter.SetGradeRange(min, max)
+		fmt.Printf("Grade range: %v - %v\n", min, max)
+	}
+	if order_by != "" {
+		by, _ := strconv.Atoi(order_by)
+		filter.SetOrderBy(by)
+		fmt.Printf("Order by: %v\n", by)
+	}
+	if order_dir != "" {
+		dir, _ := strconv.Atoi(order_dir)
+		filter.SetOrderDir(dir)
+		fmt.Printf("Order dir: %v\n", dir)
+	}
+
+	problems, err := db.GetProblems(page, page_size, filter)
 
 	if err != nil || problems == nil {
 		writer.WriteHeader(http.StatusNoContent)

@@ -1,10 +1,13 @@
 package database
 
 import (
+	"fmt"
+
 	"github.com/ladecadence/PhotonAPI/pkg/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 )
 
 type SQLite struct {
@@ -12,7 +15,9 @@ type SQLite struct {
 }
 
 func (s *SQLite) Open(fileName string) (*gorm.DB, error) {
-	database, err := gorm.Open(sqlite.Open(fileName), &gorm.Config{})
+	database, err := gorm.Open(sqlite.Open(fileName), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -102,20 +107,54 @@ func (s *SQLite) GetProblems(page int, page_size int, filter models.ProblemFilte
 	var result *gorm.DB
 
 	var problems []models.Problem
-	// var tx *gorm.DB
+	var tx *gorm.DB
 
-	// if filter.Active {
-	// 	if filter.OrderBy != models.FilterOrderByNothing {
+	if filter.Active {
+		if filter.OrderBy != models.FilterOrderByNothing {
+			order := ""
+			switch filter.OrderBy {
+			case models.FilterOrderByGrade:
+				order += "grade"
+			case models.FilterOrderByName:
+				order += "name"
+			case models.FilterOrderBySends:
+				order += "sends"
+			}
 
-	// 	}
-	// } else {
-	// 	tx = s.db.Order("asc")
-	// }
+			switch filter.OrderDir {
+			case models.FilterOrderAsc:
+				order += " asc"
+			case models.FilterOrderDesc:
+				order += " desc"
+			default:
+				order += " asc"
+			}
+			tx = s.db.Order(order)
+		}
+		if filter.WallID != "" {
+			if tx == nil {
+				tx = s.db.Where("wall_id", filter.WallID)
+			} else {
+				tx = tx.Where("wall_id", filter.WallID)
+			}
+		}
+
+		if filter.GradeRange != nil {
+			if tx == nil {
+				tx = s.db.Where("grade >= " + fmt.Sprintf("%v", filter.GradeRange[0]) + " AND grade <= " + fmt.Sprintf("%v", filter.GradeRange[1]))
+			} else {
+				tx = tx.Where("grade >= " + fmt.Sprintf("%v", filter.GradeRange[0]) + " AND grade <= " + fmt.Sprintf("%v", filter.GradeRange[1]))
+			}
+		}
+
+	} else {
+		tx = s.db.Order("id asc")
+	}
 
 	if page >= 0 && page_size > 0 {
-		result = s.db.Order("id asc").Limit(page_size).Offset(page * page_size).Find(&problems)
+		result = tx.Limit(page_size).Offset(page * page_size).Find(&problems)
 	} else {
-		result = s.db.Order("id asc").Find(&problems)
+		result = tx.Find(&problems)
 	}
 	return problems, result.Error
 }
