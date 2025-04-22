@@ -113,9 +113,9 @@ func (s *SQLite) GetProblems(page int, page_size int, filter models.ProblemFilte
 	// }
 
 	if page >= 0 && page_size > 0 {
-		result = s.db.Order("asc").Limit(page_size).Offset(page * page_size).Find(&problems)
+		result = s.db.Order("id asc").Limit(page_size).Offset(page * page_size).Find(&problems)
 	} else {
-		result = s.db.Order("asc").Find(&problems)
+		result = s.db.Order("id asc").Find(&problems)
 	}
 	return problems, result.Error
 }
