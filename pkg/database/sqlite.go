@@ -16,7 +16,7 @@ type SQLite struct {
 
 func (s *SQLite) Open(fileName string) (*gorm.DB, error) {
 	database, err := gorm.Open(sqlite.Open(fileName), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Error),
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		panic(err)
