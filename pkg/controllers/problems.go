@@ -36,14 +36,26 @@ func ApiGetProblems(writer http.ResponseWriter, request *http.Request) {
 		fmt.Printf("Grade range: %v - %v\n", min, max)
 	}
 	if order_by != "" {
-		by, _ := strconv.Atoi(order_by)
-		filter.SetOrderBy(by)
-		fmt.Printf("Order by: %v\n", by)
+		switch order_by {
+		case "grade":
+			filter.SetOrderBy(models.FilterOrderByGrade)
+		case "sends":
+			filter.SetOrderBy(models.FilterOrderByGrade)
+		case "name":
+			filter.SetOrderBy(models.FilterOrderByName)
+		default:
+			filter.SetOrderBy(models.FilterOrderByNothing)
+		}
 	}
 	if order_dir != "" {
-		dir, _ := strconv.Atoi(order_dir)
-		filter.SetOrderDir(dir)
-		fmt.Printf("Order dir: %v\n", dir)
+		switch order_dir {
+		case "asc":
+			filter.SetOrderDir(models.FilterOrderAsc)
+		case "desc":
+			filter.SetOrderDir(models.FilterOrderDesc)
+		default:
+			filter.SetOrderDir(models.FilterOrderAsc)
+		}
 	}
 
 	problems, err := db.GetProblems(page, page_size, filter)
