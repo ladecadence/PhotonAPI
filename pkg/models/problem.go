@@ -10,8 +10,8 @@ const (
 	FilterOrderByGrade
 	FilterOrderBySends
 
-	FilterOrderAsc = iota
-	FilterOrderDesc
+	FilterOrderAsc  = 0
+	FilterOrderDesc = 1
 )
 
 func ProblemFields() []string {
@@ -60,12 +60,14 @@ func (f *ProblemFilter) SetGradeRange(gmin, gmax int) {
 }
 
 func (f *ProblemFilter) SetOrderDir(dir int) {
+	f.Active = true
 	if dir >= FilterOrderAsc && dir <= FilterOrderDesc {
 		f.OrderDir = dir
 	}
 }
 
 func (f *ProblemFilter) SetOrderBy(order int) {
+	f.Active = true
 	if order >= FilterOrderByNothing && order <= FilterOrderBySends {
 		f.OrderBy = order
 	}
